@@ -67,9 +67,19 @@ public class ProcessorTest {
 
             // The interpretation of bytes is up to the program.
             paymentLogByteBuffer = ByteBuffer.wrap(Files.readAllBytes(pathToPaymentLogFile));
-            byte[] magicProtocalFormat = new byte[4];
-            paymentLogByteBuffer.get(magicProtocalFormat, 0, 4);
+
+            int offset = 0;
+            int length = 4;
+            byte[] magicProtocalFormat = new byte[length];
+            paymentLogByteBuffer.get(magicProtocalFormat, offset, length);
             System.out.println(Strings.nullToEmpty(new String(magicProtocalFormat, StandardCharsets.US_ASCII)));
+
+            offset = 0;
+            length = 1;
+            byte[] version = new byte[length];
+            paymentLogByteBuffer.get(version, offset, length);
+            System.out.println(version[0]);
+
             
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
