@@ -68,17 +68,34 @@ public class ProcessorTest {
             // The interpretation of bytes is up to the program.
             paymentLogByteBuffer = ByteBuffer.wrap(Files.readAllBytes(pathToPaymentLogFile));
 
-            int offset = 0;
-            int length = 4;
-            byte[] magicProtocalFormat = new byte[length];
-            paymentLogByteBuffer.get(magicProtocalFormat, offset, length);
-            System.out.println(Strings.nullToEmpty(new String(magicProtocalFormat, StandardCharsets.US_ASCII)));
+            // BEGIN READ HEADER DATA
+            int offsetToBeginReadingFrom = 0;
+            int bytesToRead = 4;
+            byte[] protocalFormatArray = new byte[bytesToRead];
+            paymentLogByteBuffer.get(protocalFormatArray, offsetToBeginReadingFrom, bytesToRead);
+            System.out.println(Strings.nullToEmpty(new String(protocalFormatArray, StandardCharsets.US_ASCII)));
 
-            offset = 0;
-            length = 1;
-            byte[] version = new byte[length];
-            paymentLogByteBuffer.get(version, offset, length);
-            System.out.println(version[0]);
+            offsetToBeginReadingFrom = 0;
+            bytesToRead = 1;
+            byte[] versionArray = new byte[bytesToRead];
+            paymentLogByteBuffer.get(versionArray, offsetToBeginReadingFrom, bytesToRead);
+            System.out.println(versionArray[0]);
+
+            offsetToBeginReadingFrom = 0;
+            bytesToRead = 4;
+            byte[] recordNumberArray = new byte[bytesToRead];
+            paymentLogByteBuffer.get(recordNumberArray, offsetToBeginReadingFrom, bytesToRead);
+            System.out.println(recordNumberArray[3]);
+            // END READ HEADER DATA
+
+
+
+
+
+
+//            System.out.println(getUInt32(recordNumberArray));
+
+
 
             
 //        } catch (IOException e) {
@@ -86,6 +103,15 @@ public class ProcessorTest {
 //        }
 
 //        Resources.asByteSource(ClassLoader.getSystemResource("txnlog.dat"));
+    }
+
+
+    private long getUInt32(byte[] bytes) {
+        long value = bytes[0] & 0xFF;
+        value |= (bytes[1] << 8) & 0xFFFF;
+        value |= (bytes[2] << 16) & 0xFFFFFF;
+        value |= (bytes[3] << 24) & 0xFFFFFFFF;
+        return value;
     }
 
     private void getMagicProtocalFormatString(int beginByte, int endByte) {
