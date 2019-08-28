@@ -8,7 +8,6 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -97,6 +96,7 @@ public class ProcessorTest {
 
             // manipulate stream
 
+            // BEGIN READ HEADER DATA
             int offsetToBeginReadingFrom = 0;
             int bytesToRead = 4;
             byte[] protocalFormatArray = new byte[bytesToRead];
@@ -109,70 +109,52 @@ public class ProcessorTest {
             byte[] recordNumberArray = new byte[bytesToRead];
             paymentLog.read(recordNumberArray, offsetToBeginReadingFrom, bytesToRead);
             System.out.println(recordNumberArray[3]);
+            // END READ HEADER DATA
 
-            int debitCounter = 0;
-            int creditCounter = 0;
+            // BEGIN PROCESSING ROWS
             int startAutopayCounter = 0;
             int endAutopayCounter = 0;
-            int otherCounter = 0;
             for (int i = 0; i < recordNumberArray[3]; i++) {
-
-                String recordTypeHex = null;
-                try {
-                    recordTypeHex = readRecordTypeHexValue(paymentLog);
-                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e ) {
-                    throw new RuntimeException(e);
-                }
-
                 int readFrom = 0;
                 bytesToRead = 12;
-
-                if (recordTypeHex.equals("0x00") || recordTypeHex.equals("0x01")) {
-                    bytesToRead = 20;
-                    if (recordTypeHex.equals("0x00")) {
-                        debitCounter++;
-                    }
-                    if (recordTypeHex.equals("0x01")) {
-                        creditCounter++;
-                    }
+                int recordTypeHex = readRecordTypeHexInt(paymentLog);
+                switch (recordTypeHex) {
+                    case 0:
+                    case 1:
+                        bytesToRead = 20;
+                        break;
+                    case 2:
+                        startAutopayCounter++;
+                        break;
+                    case 3:
+                        endAutopayCounter++;
+                        break;
+                    default:
+                        // shouldn't get here
                 }
-                else if (recordTypeHex.equals("0x02")) {
-                    startAutopayCounter++;
-                }
-                else if (recordTypeHex.equals("0x03")) {
-                    endAutopayCounter++;
-                }
-                else {
-                    otherCounter++;
-                }
-
                 byte[] restOfLine = new byte[bytesToRead];
                 paymentLog.read(restOfLine, readFrom, bytesToRead);
 System.out.println(String.copyValueOf(Hex.encodeHex(restOfLine)));
             }
+            // BEGIN PROCESSING ROWS
 
-            System.out.println("NUM DEBITS: " + debitCounter);
-            System.out.println("NUM CREDITS: " + creditCounter);
+            // BEGIN REPORTING
             System.out.println("START AUTOPAYS: " + startAutopayCounter);
             System.out.println("END AUTOPAYS: " + endAutopayCounter);
-            System.out.println("OTHER: " + otherCounter);
-            
+            // END REPORTING
+
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String readRecordTypeHexValue(DataInputStream paymentLog) throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public int readRecordTypeHexInt(DataInputStream paymentLog) throws IOException {
         byte[] recordTypeArray = new byte[1];
         paymentLog.read(recordTypeArray, 0, 1);
         char[] hexChars = Hex.encodeHex(recordTypeArray);
-System.out.println(hexChars);
-//        Method m = Hex.class.getDeclaredMethod("toDigit", Character.TYPE, Integer.TYPE);
-//        m.setAccessible(true);
-//        for (int i = 0; i < hexChars.length; i++) {
-//            System.out.println(m.invoke(hexChars[i], 0));
-//        }
-        return "0x" + String.copyValueOf(Hex.encodeHex(recordTypeArray));
+        int decimal = Integer.parseInt(new String(hexChars), 16);
+System.out.println("decimal:" + decimal);
+        return decimal;
     }
 
     private String writeByteArrayAsString(byte[] arrayToPrint) {
