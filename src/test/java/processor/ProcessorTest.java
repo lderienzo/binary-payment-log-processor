@@ -7,7 +7,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -18,6 +17,9 @@ import java.nio.file.StandardOpenOption;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
+import com.adhoc.homework.transactionlogparser.BinaryFile;
+import com.adhoc.homework.transactionlogparser.BinaryFile.Header;
+import com.adhoc.homework.transactionlogparser.BinaryFileParsingException;
 import com.google.common.base.Strings;
 
 public class ProcessorTest {
@@ -93,28 +95,31 @@ public class ProcessorTest {
 
         try (DataInputStream paymentLog = new DataInputStream(new BufferedInputStream(
                         Files.newInputStream(pathToPaymentLogFile, StandardOpenOption.READ)))) {
-
             // manipulate stream
+            Header header = BinaryFile.Header.readFromFile(paymentLog);
+            if (isNotValid(header))
+                throw new BinaryFileParsingException("Failure parsing binary file. Invalid header data.");
 
             // BEGIN READ HEADER DATA
-            int offsetToBeginReadingFrom = 0;
+//            int offsetToBeginReadingFrom = 0;
             int bytesToRead = 4;
-            byte[] protocalFormatArray = new byte[bytesToRead];
-            paymentLog.read(protocalFormatArray, offsetToBeginReadingFrom, bytesToRead);
-            System.out.println(writeByteArrayAsString(protocalFormatArray));
-
-            byte version = paymentLog.readByte();
-            System.out.println(version);
-
-            byte[] recordNumberArray = new byte[bytesToRead];
-            paymentLog.read(recordNumberArray, offsetToBeginReadingFrom, bytesToRead);
-            System.out.println(recordNumberArray[3]);
+//            byte[] protocalFormatArray = new byte[bytesToRead];
+//            paymentLog.read(protocalFormatArray, offsetToBeginReadingFrom, bytesToRead);
+//            System.out.println(writeByteArrayAsString(protocalFormatArray));
+//
+//            byte version = paymentLog.readByte();
+//            System.out.println(version);
+//
+//            byte[] recordNumberArray = new byte[bytesToRead];
+//            paymentLog.read(recordNumberArray, offsetToBeginReadingFrom, bytesToRead);
+//            System.out.println(recordNumberArray[3]);
             // END READ HEADER DATA
+
 
             // BEGIN PROCESSING ROWS
             int startAutopayCounter = 0;
             int endAutopayCounter = 0;
-            for (int i = 0; i < recordNumberArray[3]; i++) {
+            for (int i = 0; i < header.getNumberOfRecords(); i++) {
                 int readFrom = 0;
                 bytesToRead = 12;
                 int recordTypeHex = readRecordTypeHexInt(paymentLog);
@@ -146,6 +151,10 @@ System.out.println(String.copyValueOf(Hex.encodeHex(restOfLine)));
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean isNotValid(Header header) {
+        return !header.isValid();
     }
 
     public int readRecordTypeHexInt(DataInputStream paymentLog) throws IOException {
