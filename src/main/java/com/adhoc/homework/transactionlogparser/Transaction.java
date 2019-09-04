@@ -1,6 +1,6 @@
 package com.adhoc.homework.transactionlogparser;
 
 
-public interface PaymentType {
+public class Transaction {
 
 }
