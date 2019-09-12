@@ -1,18 +1,24 @@
 package com.adhoc.homework.transactionlogparser;
 
+import static com.adhoc.homework.transactionlogparser.RecordType.*;
+
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.Hex;
+import org.checkerframework.checker.units.qual.C;
+
 
 public class TransactionLog implements ProprietaryFormatBinaryFile {
 
-    private static final String PROPRIETARY_PROTOCOL = "MPS7";
     private static final String FILE_PROCESSING_ERROR_MSG = "Error processing proprietary binary transaction file.";
+    private static final String PROPRIETARY_PROTOCOL = "MPS7";
     private static final int MAX_RECORDS = 100;
     private DataInputStream fileInputStream;
-    private List<Transaction> transactions;
+    private List<Record> transactionRecords;
     private Header header;
 
     private TransactionLog(DataInputStream fileInputStream) {
@@ -21,15 +27,11 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
     }
 
     public static TransactionLog process(DataInputStream fileInputStream) {
-        // Read header
-        // -make sure its valid
         TransactionLog log = new TransactionLog(fileInputStream);
-        if (log.getHeader().isValid()) {
-            log.processRows();
-        }
+        if (log.getHeader().isValid())
+            log.processRecords();
         else
             throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Invalid header data.");
-
         return log;
     }
 
@@ -37,82 +39,93 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
         return header;
     }
 
-    private void processRows() {
-        // -obtain number of records
-        //      - use number of records to process records
-        // Process Records
-        // -read record type to understand how to process each row
-        //      - process each row according to record type.
-        int bytesToRead = 4;
+    private void processRecords() {
+        transactionRecords = new ArrayList<>(header.getNumberOfRecords());
+        for (int i = 0; i < header.getNumberOfRecords(); i++) {
+            RecordType recordType = readRecordTypeEnum(fileInputStream);
+            Record record = new RecordFactoryImpl().makeRecord(recordType, fileInputStream);
+            transactionRecords.add(record);
+        }
+    }
 
-        // BEGIN PROCESSING ROWS
-        int startAutopayCounter = 0;
-        int endAutopayCounter = 0;
+    private RecordType readRecordTypeEnum(DataInputStream inputStream) {
+        int recordTypeHex = readRecordType(inputStream);
+        return RecordType.values()[recordTypeHex];
+    }
 
+    private static int readRecordType(DataInputStream inputStream) {
+        byte[] recordTypeByte = readSingleByte(inputStream);
+        char[] recordTypeHexChars = encodeBytesToHexChars(recordTypeByte);
+        int recordTypeDecimal = encodeHexCharsToInt(recordTypeHexChars);
+        return recordTypeDecimal;
+    }
+
+    private static byte[] readSingleByte(DataInputStream binaryStream) {
+        byte[] singleByteArray = new byte[1];
+        readFromBinaryStreamIntoByteArray(binaryStream, singleByteArray);
+        return singleByteArray;
+    }
+
+    private static char[] encodeBytesToHexChars(byte[] byteArrayToEncode) {
+        return Hex.encodeHex(byteArrayToEncode);
+    }
+
+    // TODO - DRY PRINCIPLE VIOLATION -- consolodate stream reading/manipulating activites in it's own class and reuse.
+    private static void readFromBinaryStreamIntoByteArray(DataInputStream readFromStream, byte[] intoArray) {
         try {
-            for (int i = 0; i < header.getNumberOfRecords(); i++) {
-                int readFrom = 0;
-                bytesToRead = 12;
-                int recordTypeHex = readRecordTypeHexInt(fileInputStream);
-                switch (recordTypeHex) {
-                    case 0:
-                    case 1:
-                        bytesToRead = 20;
-                        break;
-                    case 2:
-                        startAutopayCounter++;
-                        break;
-                    case 3:
-                        endAutopayCounter++;
-                        break;
-                    default:
-                        // shouldn't get here
-                }
-                byte[] restOfLine = new byte[bytesToRead];
-                fileInputStream.read(restOfLine, readFrom, bytesToRead);
-                System.out.println(String.copyValueOf(Hex.encodeHex(restOfLine)));
-            }
-            // BEGIN PROCESSING ROWS
-
-            // BEGIN REPORTING
-            System.out.println("START AUTOPAYS: " + startAutopayCounter);
-            System.out.println("END AUTOPAYS: " + endAutopayCounter);
-            // END REPORTING
-
-        } catch(IOException e) {
+            readFromStream.read(intoArray, 0, intoArray.length);
+        } catch (IOException e) {
             throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG, e);
         }
     }
 
-    private static int readRecordTypeHexInt(DataInputStream paymentLog) throws IOException {
-        byte[] recordTypeArray = new byte[1];
-        paymentLog.read(recordTypeArray, 0, 1);
-        char[] hexChars = Hex.encodeHex(recordTypeArray);
-        int decimal = Integer.parseInt(new String(hexChars), 16);
-        return decimal;
+    private static int encodeHexCharsToInt(char[] hexCharsToEncode) {
+        return Integer.parseInt(new String(hexCharsToEncode), 16);
     }
 
-    public long totalDollarsInDebits() {
-        return 0;
+    public double totalDollarsInDebits() {
+        return transactionRecords.stream()
+                .filter(record -> record.getType() == DEBIT)
+                .mapToDouble(record -> ((RecordWithDollarAmount)record)
+                        .getDollarAmount()).sum();
     }
 
-    public long totalDollarsInCredits() {
-        return 0;
+    public double totalDollarsInCredits() {
+        return transactionRecords.stream()
+                .filter(record -> record.getType() == CREDIT)
+                .mapToDouble(record -> ((RecordWithDollarAmount)record)
+                        .getDollarAmount()).sum();
     }
 
-    public int numberOfAutopaysStarted() {
-        return 0;
+    public long numberOfAutopaysStarted() {
+        return transactionRecords.stream()
+                .filter(record -> record.getType() == START_AUTOPAY).count();
     }
 
-    public int numberOfAutopaysEnded() {
-        return 0;
+    public long numberOfAutopaysEnded() {
+        return transactionRecords.stream()
+                .filter(record -> record.getType() == END_AUTOPAY).count();
     }
 
-    public float getBalanceForUser(String id) {
-        return 0;
+    public double getBalanceForUser(String userId) {
+        List<Record> userTransactions = getTransactionsForUser(userId);
+        return sumTransactionAmounts(userTransactions);
     }
 
-    public static class Header {
+    private double sumTransactionAmounts(List<Record> transactionRecords) {
+        return transactionRecords.stream()
+                .filter(record -> (record.getType() == CREDIT || record.getType() == DEBIT))
+                .mapToDouble(record -> ((RecordWithDollarAmount)record)
+                .getDollarAmount()).sum();
+    }
+
+    private List<Record> getTransactionsForUser(String userId) {
+        return transactionRecords.stream()
+                .filter(record -> record.getUserId().equals(userId))
+                .collect(Collectors.toList());
+    }
+
+    static class Header {
 
         private DataInputStream fileStreamWithHeader;
         private String binaryProtocolFormat;
@@ -120,7 +133,6 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
         private int numberOfRecords = 101;
         private int bytesToRead = 4;
         private int version = 0;
-
 
         public static Header read(DataInputStream fileStreamWithHeader) {
             return new Header(fileStreamWithHeader);
@@ -135,13 +147,13 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
 
         private String readProtocolFormat() {
             byte[] protocalFormatArray = new byte[bytesToRead];
-            bytesActuallyRead = readProtocolFormatFromInputStream(protocalFormatArray,0, protocalFormatArray.length);
+            bytesActuallyRead = readProtocolFormatFromInputStream(protocalFormatArray, protocalFormatArray.length);
             if (bytesActuallyRead != protocalFormatArray.length)
                 throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining protocol format.");
             return new String(protocalFormatArray);
         }
 
-        private int readProtocolFormatFromInputStream(byte[] readIntoArray, int offsetToBeginReadingFrom, int bytesToRead) {
+        private int readProtocolFormatFromInputStream(byte[] readIntoArray, int bytesToRead) {
             return readDataFromInputStreamIntoArray(readIntoArray,0, bytesToRead);
         }
 
@@ -166,7 +178,7 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
             bytesActuallyRead = readNumberOfRecordsFromInputStream(recordNumberArray, 0, recordNumberArray.length);
             if (bytesActuallyRead != recordNumberArray.length)
                 throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining number of transaction records.");
-            return recordNumberArray[3];    //TODO: this doesn't feel 100% ok. Feels like we should convert an unsigned 32 bit int
+            return recordNumberArray[3];
         }
 
         private int readNumberOfRecordsFromInputStream(byte[] readIntoArray, int offsetToBeginReadingFrom, int bytesToRead) {
