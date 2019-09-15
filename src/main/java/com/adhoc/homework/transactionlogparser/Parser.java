@@ -15,8 +15,8 @@ import com.adhoc.homework.transactionlogparser.arguments.ValidatedArgs;
 
 public final class Parser {
     private static final Logger LOG = LogManager.getLogger(Parser.class);
-    private static final String USAGE_MSG = "\nUsage:\n" + "binary-payment-log-processor.jar" +
-            " --" + TRANSACTION_LOG_FILE + "=<path> " +
+    private static final String USAGE_MSG = "\nUsage:\n" + "java -cp \"binary-payment-log-processor.jar\" com.adhoc.homework.transactionlogparser.Parser" +
+            " --" + TRANSACTION_LOG_FILE + "=<file_path> " +
             " [--" + USER_ID + "=<user_id>]\n";
     private TransactionLog transactionLog;
     private ValidatedArgs validatedArgs;
@@ -37,10 +37,15 @@ public final class Parser {
         try {
             validatedArgs = ArgProcessor.getValidatedArgs(args);
         } catch (ArgException e) {
-            LOG.error("Error processing arguments.", e);
+            LOG.error("Error processing arguments: "+e.getMessage());
             System.out.println(USAGE_MSG);
+            abnormalTermination();
         }
         return validatedArgs;
+    }
+
+    private void abnormalTermination() {
+        System.exit(1);
     }
 
     private DataInputStream getBinaryStreamFromFilePath(Path path) {
