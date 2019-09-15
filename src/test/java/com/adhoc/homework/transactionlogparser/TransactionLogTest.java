@@ -1,22 +1,15 @@
-package processor;
+package com.adhoc.homework.transactionlogparser;
 
 
 
+import static com.adhoc.homework.transactionlogparser.FileUtils.getDataInputStreamFromPath;
+import static com.adhoc.homework.transactionlogparser.TestUtils.getResourceFilePath;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
+import java.nio.file.*;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import com.adhoc.homework.transactionlogparser.TransactionLog;
+import org.junit.jupiter.api.*;
 
 public class TransactionLogTest {
 
@@ -24,19 +17,13 @@ public class TransactionLogTest {
 
     @BeforeAll
     public static void init() {
-        processLogFile();
+        createTransactionLogFile();
     }
 
-    private static void processLogFile() {
-        Path resourceDirectory = Paths.get("src","test","resources");
-        String absolutePath = resourceDirectory.toFile().getAbsolutePath();
-        Path pathToTransactionLogFile = FileSystems.getDefault().getPath(absolutePath, "txnlog.dat");
-        try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(
-                        Files.newInputStream(pathToTransactionLogFile, StandardOpenOption.READ)))) {
-            transactionLog = TransactionLog.process(dataInputStream);
-        } catch(IOException e) {
-            throw new RuntimeException(e);
-        }
+    private static void createTransactionLogFile() {
+        Path pathToTransactionLogFile = getResourceFilePath("txnlog.dat");
+        DataInputStream dataInputStream = getDataInputStreamFromPath(pathToTransactionLogFile);
+        transactionLog = TransactionLog.createFromBinaryStream(dataInputStream);
     }
 
     @Test

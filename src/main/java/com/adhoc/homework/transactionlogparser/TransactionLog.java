@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.Hex;
-import org.checkerframework.checker.units.qual.C;
 
 
-public class TransactionLog implements ProprietaryFormatBinaryFile {
+public final class TransactionLog implements ProprietaryFormatBinaryFile {
 
     private static final String FILE_PROCESSING_ERROR_MSG = "Error processing proprietary binary transaction file.";
     private static final String PROPRIETARY_PROTOCOL = "MPS7";
@@ -26,7 +25,7 @@ public class TransactionLog implements ProprietaryFormatBinaryFile {
         this.header = Header.read(fileInputStream);
     }
 
-    public static TransactionLog process(DataInputStream fileInputStream) {
+    public static TransactionLog createFromBinaryStream(DataInputStream fileInputStream) {
         TransactionLog log = new TransactionLog(fileInputStream);
         if (log.getHeader().isValid())
             log.processRecords();
