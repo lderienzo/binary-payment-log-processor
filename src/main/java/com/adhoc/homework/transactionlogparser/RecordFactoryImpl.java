@@ -6,19 +6,15 @@ public class RecordFactoryImpl implements RecordFactory {
 
     @Override
     public Record makeRecord(RecordType type, DataInputStream inputStream) {
-        Record record;
         switch (type) {
             case DEBIT:
             case CREDIT:
-                record = new RecordWithDollarAmount(type, inputStream);
-                break;
+                return new RecordWithDollarAmount(type, inputStream);
             case START_AUTOPAY:
             case END_AUTOPAY:
-                record = new Record(type, inputStream);
-                break;
+                return new Record(type, inputStream);
             default: // shouldn't get here
-                record = new Record();
+                return new Record();
         }
-        return record;
     }
 }
