@@ -17,7 +17,7 @@ public final class Parser {
     private static final Logger LOG = LogManager.getLogger(Parser.class);
     private static final String USAGE_MSG = "\nUsage:\n" + "binary-payment-log-processor.jar" +
             " --" + TRANSACTION_LOG_FILE + "=<path> " +
-            " --" + USER_ID + "=<user_id>\n";
+            " [--" + USER_ID + "=<user_id>]\n";
     private TransactionLog transactionLog;
     private ValidatedArgs validatedArgs;
 
@@ -48,14 +48,14 @@ public final class Parser {
     }
 
     private void printAnswersToConsole() {
-        System.out.println("======================================================\n");
+        System.out.println("\n======================================================");
         System.out.println("Total Amount of Debits:\n$" +transactionLog.totalDollarsInDebits()+"\n");
         System.out.println("Total Amount of Credits:\n$" +transactionLog.totalDollarsInCredits()+"\n");
         System.out.println("Number of Autopays Started:\n" +transactionLog.numberOfAutopaysStarted()+"\n");
-        System.out.println("Number of Autopays Ended:\n" + transactionLog.numberOfAutopaysEnded()+"\n");
+        System.out.println("Number of Autopays Ended:\n" + transactionLog.numberOfAutopaysEnded());
         if (validatedArgs.getUserId().isPresent())
-            System.out.println("Balance of User ID \""+validatedArgs.getUserId().get()+"\":\n$"
-                    +transactionLog.getBalanceForUser((validatedArgs.getUserId().get()))+"\n");
-        System.out.println("======================================================");
+            System.out.println("\nBalance of User ID \""+validatedArgs.getUserId().get()+"\":\n$"
+                    +transactionLog.getBalanceForUser((validatedArgs.getUserId().get())));
+        System.out.println("======================================================\n");
     }
 }
