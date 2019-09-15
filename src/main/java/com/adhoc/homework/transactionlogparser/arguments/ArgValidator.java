@@ -22,11 +22,11 @@ final class ArgValidator {
     }
 
     public static boolean isValidUserId(String userId) {
-        validIfParseableAsLong(userId);
+        validIfParsableAsLong(userId);
         return validIfNineteenNumbersLong(userId);
     }
 
-    private static void validIfParseableAsLong(String userId) {
+    private static void validIfParsableAsLong(String userId) {
         try {
             Long.toString(Long.parseLong(userId));
         } catch (NumberFormatException e) {

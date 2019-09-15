@@ -39,9 +39,7 @@ public class ArgExtractorTest {
     }
 
     private void assertCallToExtractRequiredArgThrowsParserArgsException(Arg argToExtract) {
-        Assertions.assertThrows(ArgException.class, () -> {        // (2) - then
-            ArgExtractor.extractRequiredArg(argToExtract, args);  // (1) - when
-        });
+        Assertions.assertThrows(ArgException.class, () -> ArgExtractor.extractRequiredArg(argToExtract, args));
     }
 
     @Test

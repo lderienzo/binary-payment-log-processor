@@ -41,7 +41,7 @@ public class Record {
         }
     }
 
-    protected char[] encodeBytesToHexChars(byte[] byteArrayToEncode) {
+    private char[] encodeBytesToHexChars(byte[] byteArrayToEncode) {
         return Hex.encodeHex(byteArrayToEncode);
     }
 
@@ -63,10 +63,6 @@ public class Record {
 
     public final RecordType getType() {
         return type;
-    }
-
-    public final long getTimestamp() {
-        return timestamp;
     }
 
     public final String getUserId() {

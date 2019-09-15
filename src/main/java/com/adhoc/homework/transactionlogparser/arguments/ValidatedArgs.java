@@ -5,8 +5,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public final class ValidatedArgs {
-    private Path logFilePath;
-    private Optional<String> userId;
+    private final Path logFilePath;
+    private final Optional<String> userId;
 
     public ValidatedArgs(Path logFilePath, Optional<String> userId) {
         this.logFilePath = logFilePath;

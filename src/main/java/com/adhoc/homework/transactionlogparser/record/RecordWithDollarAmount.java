@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 public final class RecordWithDollarAmount extends Record {
 
-    private double dollarAmount;
+    private final double dollarAmount;
 
     public RecordWithDollarAmount(RecordType type, DataInputStream binaryStream) {
         super(type, binaryStream);

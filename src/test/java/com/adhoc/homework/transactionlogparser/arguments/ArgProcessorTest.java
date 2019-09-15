@@ -84,9 +84,7 @@ public class ArgProcessorTest {
     }
 
     private void assertCallToProcessMethodThrowsParserArgsException() {
-        Assertions.assertThrows(ArgException.class, () -> {   // (2) - then
-            ArgProcessor.getValidatedArgs(args);             // (1) - when
-        });
+        Assertions.assertThrows(ArgException.class, () -> ArgProcessor.getValidatedArgs(args));
     }
 
     @Test

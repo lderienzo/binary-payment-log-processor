@@ -21,9 +21,9 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
     private static final String FILE_PROCESSING_ERROR_MSG = "Error processing proprietary binary transaction file.";
     private static final String PROPRIETARY_PROTOCOL = "MPS7";
     private static final int MAX_RECORDS = 100;
-    private DataInputStream fileInputStream;
+    private final DataInputStream fileInputStream;
     private List<Record> transactionRecords;
-    private Header header;
+    private final Header header;
 
     private TransactionLog(DataInputStream fileInputStream) {
         this.fileInputStream = fileInputStream;
@@ -60,8 +60,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
     private static int readRecordType(DataInputStream inputStream) {
         byte[] recordTypeByte = readSingleByte(inputStream);
         char[] recordTypeHexChars = encodeBytesToHexChars(recordTypeByte);
-        int recordTypeDecimal = encodeHexCharsToInt(recordTypeHexChars);
-        return recordTypeDecimal;
+        return encodeHexCharsToInt(recordTypeHexChars);
     }
 
     private static byte[] readSingleByte(DataInputStream binaryStream) {
@@ -74,7 +73,6 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
         return Hex.encodeHex(byteArrayToEncode);
     }
 
-    // TODO - DRY PRINCIPLE VIOLATION -- consolodate stream reading/manipulating activites in it's own class and reuse.
     private static void readFromBinaryStreamIntoByteArray(DataInputStream readFromStream, byte[] intoArray) {
         try {
             readFromStream.read(intoArray, 0, intoArray.length);
@@ -131,14 +129,14 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
 
     static class Header {
 
-        private DataInputStream fileStreamWithHeader;
-        private String binaryProtocolFormat;
+        private final DataInputStream fileStreamWithHeader;
+        private final String binaryProtocolFormat;
+        private final int bytesToRead = 4;
         private int bytesActuallyRead;
         private int numberOfRecords = 101;
-        private int bytesToRead = 4;
         private int version = 0;
 
-        public static Header read(DataInputStream fileStreamWithHeader) {
+        static Header read(DataInputStream fileStreamWithHeader) {
             return new Header(fileStreamWithHeader);
         }
 
@@ -150,11 +148,11 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
         }
 
         private String readProtocolFormat() {
-            byte[] protocalFormatArray = new byte[bytesToRead];
-            bytesActuallyRead = readProtocolFormatFromInputStream(protocalFormatArray, protocalFormatArray.length);
-            if (bytesActuallyRead != protocalFormatArray.length)
+            byte[] protocolFormatArray = new byte[bytesToRead];
+            bytesActuallyRead = readProtocolFormatFromInputStream(protocolFormatArray, protocolFormatArray.length);
+            if (bytesActuallyRead != protocolFormatArray.length)
                 throw new LogParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining protocol format.");
-            return new String(protocalFormatArray);
+            return new String(protocolFormatArray);
         }
 
         private int readProtocolFormatFromInputStream(byte[] readIntoArray, int bytesToRead) {
@@ -179,22 +177,22 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
 
         private int readNumberOfRecords() {
             byte[] recordNumberArray = new byte[bytesToRead];
-            bytesActuallyRead = readNumberOfRecordsFromInputStream(recordNumberArray, 0, recordNumberArray.length);
+            bytesActuallyRead = readNumberOfRecordsFromInputStream(recordNumberArray, recordNumberArray.length);
             if (bytesActuallyRead != recordNumberArray.length)
                 throw new LogParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining number of transaction records.");
             return recordNumberArray[3];
         }
 
-        private int readNumberOfRecordsFromInputStream(byte[] readIntoArray, int offsetToBeginReadingFrom, int bytesToRead) {
-            return readDataFromInputStreamIntoArray(readIntoArray, offsetToBeginReadingFrom, bytesToRead);
+        private int readNumberOfRecordsFromInputStream(byte[] readIntoArray, int bytesToRead) {
+            return readDataFromInputStreamIntoArray(readIntoArray, 0, bytesToRead);
         }
 
-        public boolean isValid() {
+        boolean isValid() {
             return binaryProtocolFormat.equals(TransactionLog.PROPRIETARY_PROTOCOL)
                     && numberOfRecords <= MAX_RECORDS && version > 0;
         }
 
-        public int getNumberOfRecords() {
+        int getNumberOfRecords() {
             return numberOfRecords;
         }
     }

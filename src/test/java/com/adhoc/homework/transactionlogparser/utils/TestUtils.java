@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 
 public class TestUtils {
 
-    public static final Path getResourceFilePath(String fileName) {
+    public static Path getResourceFilePath(String fileName) {
         Path resourceDirectory = Paths.get("src","test","resources");
         String absolutePath = resourceDirectory.toFile().getAbsolutePath();
         return FileSystems.getDefault().getPath(absolutePath, fileName);

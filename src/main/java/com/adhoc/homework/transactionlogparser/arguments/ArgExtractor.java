@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class ArgExtractor {
+final class ArgExtractor {
     private static final Logger LOG = LogManager.getLogger(ArgExtractor.class);
-    private String[] args;
-    private Arg argName;
+    private final String[] args;
+    private final Arg argName;
 
     private ArgExtractor(Arg argName, String... args) {
         this.argName = argName;

@@ -10,7 +10,7 @@ import java.util.Optional;
 import com.google.common.base.Strings;
 
 public final class ArgProcessor {
-    private String[] args;
+    private final String[] args;
     private Optional<String> userId;
     private Path logFilePath;
     private static final String ERROR_SETTING_FILE_PATH_MSG = "Error obtaining log file path.";
@@ -59,8 +59,7 @@ public final class ArgProcessor {
 
     private void processUserId() {
         Optional<String> valueEntered = extractUserId();
-        if (valueEntered.isPresent())
-            validateUserId(valueEntered.get());
+        valueEntered.ifPresent(this::validateUserId);
         setUserId(valueEntered);
     }
 
@@ -77,13 +76,5 @@ public final class ArgProcessor {
 
     private void setUserId(Optional<String> id) {
         userId = id;
-    }
-
-    public Path getLogFilePath() {
-        return logFilePath;
-    }
-
-    public Optional<String> getUserId() {
-        return userId;
     }
 }

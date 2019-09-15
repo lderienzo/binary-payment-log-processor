@@ -14,7 +14,7 @@ import com.adhoc.homework.transactionlogparser.arguments.ArgProcessor;
 import com.adhoc.homework.transactionlogparser.arguments.ValidatedArgs;
 import com.adhoc.homework.transactionlogparser.transactionlog.TransactionLog;
 
-public final class Parser {
+final class Parser {
     private static final Logger LOG = LogManager.getLogger(Parser.class);
     private static final String USAGE_MSG = "\nUsage:\n" + "java -cp \"binary-payment-log-processor.jar\" com.adhoc.homework.transactionlogparser.Parser" +
             " --" + TRANSACTION_LOG_FILE + "=<file_path> " +
@@ -26,7 +26,7 @@ public final class Parser {
         new Parser().run(args);
     }
 
-    public void run(String... args) {
+    private void run(String... args) {
         validatedArgs = getValidatedArgs(args);
         DataInputStream inputStream = getBinaryStreamFromFilePath(validatedArgs.getPath());
         transactionLog = TransactionLog.createFromBinaryStream(inputStream);
