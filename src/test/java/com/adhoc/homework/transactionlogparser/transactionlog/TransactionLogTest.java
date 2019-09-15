@@ -1,9 +1,9 @@
-package com.adhoc.homework.transactionlogparser;
+package com.adhoc.homework.transactionlogparser.transactionlog;
 
 
 
-import static com.adhoc.homework.transactionlogparser.FileUtils.getDataInputStreamFromPath;
-import static com.adhoc.homework.transactionlogparser.TestUtils.getResourceFilePath;
+import static com.adhoc.homework.transactionlogparser.utils.FileUtils.getDataInputStreamFromPath;
+import static com.adhoc.homework.transactionlogparser.utils.TestUtils.getResourceFilePath;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.io.*;

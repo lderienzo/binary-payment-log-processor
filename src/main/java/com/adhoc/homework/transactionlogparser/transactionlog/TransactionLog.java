@@ -1,6 +1,6 @@
-package com.adhoc.homework.transactionlogparser;
+package com.adhoc.homework.transactionlogparser.transactionlog;
 
-import static com.adhoc.homework.transactionlogparser.RecordType.*;
+import static com.adhoc.homework.transactionlogparser.record.RecordType.*;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.Hex;
+
+import com.adhoc.homework.transactionlogparser.record.Record;
+import com.adhoc.homework.transactionlogparser.record.RecordFactoryImpl;
+import com.adhoc.homework.transactionlogparser.record.RecordType;
+import com.adhoc.homework.transactionlogparser.record.RecordWithDollarAmount;
 
 
 public final class TransactionLog implements ProprietaryFormatBinaryFile {
@@ -30,7 +35,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
         if (log.getHeader().isValid())
             log.processRecords();
         else
-            throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Invalid header data.");
+            throw new LogParsingException(FILE_PROCESSING_ERROR_MSG + " Invalid header data.");
         return log;
     }
 
@@ -74,7 +79,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
         try {
             readFromStream.read(intoArray, 0, intoArray.length);
         } catch (IOException e) {
-            throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG, e);
+            throw new LogParsingException(FILE_PROCESSING_ERROR_MSG, e);
         }
     }
 
@@ -148,7 +153,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
             byte[] protocalFormatArray = new byte[bytesToRead];
             bytesActuallyRead = readProtocolFormatFromInputStream(protocalFormatArray, protocalFormatArray.length);
             if (bytesActuallyRead != protocalFormatArray.length)
-                throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining protocol format.");
+                throw new LogParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining protocol format.");
             return new String(protocalFormatArray);
         }
 
@@ -160,7 +165,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
             try  {
                 return fileStreamWithHeader.read(readIntoArray, offsetToBeginReadingFrom, bytesToRead);
             } catch (IOException e) {
-                throw new BinaryFileParsingException(e);
+                throw new LogParsingException(e);
             }
         }
 
@@ -168,7 +173,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
             try {
                 return version = fileStreamWithHeader.read();
             } catch (IOException e) {
-                throw new BinaryFileParsingException(e);
+                throw new LogParsingException(e);
             }
         }
 
@@ -176,7 +181,7 @@ public final class TransactionLog implements ProprietaryFormatBinaryFile {
             byte[] recordNumberArray = new byte[bytesToRead];
             bytesActuallyRead = readNumberOfRecordsFromInputStream(recordNumberArray, 0, recordNumberArray.length);
             if (bytesActuallyRead != recordNumberArray.length)
-                throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining number of transaction records.");
+                throw new LogParsingException(FILE_PROCESSING_ERROR_MSG + " Wrong number of bytes read while determining number of transaction records.");
             return recordNumberArray[3];
         }
 

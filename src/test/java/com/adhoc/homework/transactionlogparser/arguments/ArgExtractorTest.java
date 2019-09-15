@@ -1,6 +1,6 @@
 package com.adhoc.homework.transactionlogparser.arguments;
 
-import static com.adhoc.homework.transactionlogparser.TestConstants.*;
+import static com.adhoc.homework.transactionlogparser.constants.TestConstants.*;
 import static com.adhoc.homework.transactionlogparser.arguments.Arg.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 

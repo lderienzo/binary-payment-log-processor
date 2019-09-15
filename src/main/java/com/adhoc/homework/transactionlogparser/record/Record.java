@@ -1,9 +1,11 @@
-package com.adhoc.homework.transactionlogparser;
+package com.adhoc.homework.transactionlogparser.record;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.commons.codec.binary.Hex;
+
+import com.adhoc.homework.transactionlogparser.transactionlog.LogParsingException;
 
 public class Record {
     private static final String FILE_PROCESSING_ERROR_MSG = "Error processing proprietary binary transaction file.";
@@ -35,7 +37,7 @@ public class Record {
         try {
             readFromStream.read(intoArray, 0, intoArray.length);
         } catch (IOException e) {
-            throw new BinaryFileParsingException(FILE_PROCESSING_ERROR_MSG, e);
+            throw new LogParsingException(FILE_PROCESSING_ERROR_MSG, e);
         }
     }
 

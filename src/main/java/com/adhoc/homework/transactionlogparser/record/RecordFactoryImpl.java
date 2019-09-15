@@ -1,4 +1,4 @@
-package com.adhoc.homework.transactionlogparser;
+package com.adhoc.homework.transactionlogparser.record;
 
 import java.io.DataInputStream;
 

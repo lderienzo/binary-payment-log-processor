@@ -1,4 +1,4 @@
-package com.adhoc.homework.transactionlogparser;
+package com.adhoc.homework.transactionlogparser.utils;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;

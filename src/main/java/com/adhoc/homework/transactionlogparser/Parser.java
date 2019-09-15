@@ -1,6 +1,6 @@
 package com.adhoc.homework.transactionlogparser;
 
-import static com.adhoc.homework.transactionlogparser.FileUtils.getDataInputStreamFromPath;
+import static com.adhoc.homework.transactionlogparser.utils.FileUtils.getDataInputStreamFromPath;
 import static com.adhoc.homework.transactionlogparser.arguments.Arg.*;
 
 import java.io.DataInputStream;
@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import com.adhoc.homework.transactionlogparser.arguments.ArgException;
 import com.adhoc.homework.transactionlogparser.arguments.ArgProcessor;
 import com.adhoc.homework.transactionlogparser.arguments.ValidatedArgs;
+import com.adhoc.homework.transactionlogparser.transactionlog.TransactionLog;
 
 public final class Parser {
     private static final Logger LOG = LogManager.getLogger(Parser.class);
