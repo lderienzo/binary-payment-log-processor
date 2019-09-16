@@ -29,7 +29,7 @@ final class ArgExtractor {
         try {
             argValue = argExtractor.getArgFromArgsArray();
         } catch (ArgException e) {
-            LOG.info("Optional argument of "+argName+ " is absent.");
+            LOG.debug("Optional argument of "+argName+ " is absent.");
         }
         return argValue;
     }

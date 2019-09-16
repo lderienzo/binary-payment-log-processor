@@ -1,7 +1,7 @@
 package com.adhoc.homework.transactionlogparser;
 
+import static com.adhoc.homework.transactionlogparser.constants.Constants.USAGE_MSG;
 import static com.adhoc.homework.transactionlogparser.utils.FileUtils.getDataInputStreamFromPath;
-import static com.adhoc.homework.transactionlogparser.arguments.Arg.*;
 
 import java.io.DataInputStream;
 import java.nio.file.Path;
@@ -16,9 +16,6 @@ import com.adhoc.homework.transactionlogparser.transactionlog.TransactionLog;
 
 final class Parser {
     private static final Logger LOG = LogManager.getLogger(Parser.class);
-    private static final String USAGE_MSG = "\nUsage:\n" + "java -cp \"binary-payment-log-processor.jar\" com.adhoc.homework.transactionlogparser.Parser" +
-            " --" + TRANSACTION_LOG_FILE + "=<file_path> " +
-            " [--" + USER_ID + "=<user_id>]\n";
     private TransactionLog transactionLog;
     private ValidatedArgs validatedArgs;
 
@@ -60,7 +57,7 @@ final class Parser {
         System.out.println("Number of Autopays Started:\n" +transactionLog.numberOfAutopaysStarted()+"\n");
         System.out.println("Number of Autopays Ended:\n" + transactionLog.numberOfAutopaysEnded());
         if (validatedArgs.getUserId().isPresent())
-            System.out.println("\nBalance of User ID \""+validatedArgs.getUserId().get()+"\":\n$"
+            System.out.println("\nBalance for User ID \""+validatedArgs.getUserId().get()+"\":\n$"
                     +transactionLog.getBalanceForUser((validatedArgs.getUserId().get())));
         System.out.println("======================================================\n");
     }

@@ -1,6 +1,7 @@
 package com.adhoc.homework.transactionlogparser.arguments;
 
 import static com.adhoc.homework.transactionlogparser.arguments.Arg.*;
+import static com.adhoc.homework.transactionlogparser.constants.Constants.ERROR_SETTING_FILE_PATH_MSG;
 
 import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
@@ -11,9 +12,8 @@ import com.google.common.base.Strings;
 
 public final class ArgProcessor {
     private final String[] args;
-    private Optional<String> userId;
+    private String userId;
     private Path logFilePath;
-    private static final String ERROR_SETTING_FILE_PATH_MSG = "Error obtaining log file path.";
 
 
     public static ValidatedArgs getValidatedArgs(String... args) {
@@ -42,7 +42,7 @@ public final class ArgProcessor {
 
     private void validateFilePath(String path) {
         if (invalidFilePath(path))
-            throw new ArgException(ERROR_SETTING_FILE_PATH_MSG + " Invalid log file path.");
+            throw new ArgException(ERROR_SETTING_FILE_PATH_MSG+" Invalid log file path.");
     }
 
     private boolean invalidFilePath(String path) {
@@ -53,14 +53,16 @@ public final class ArgProcessor {
         try {
             logFilePath = FileSystems.getDefault().getPath(path);
         } catch (InvalidPathException e) {
-            throw new ArgException(ERROR_SETTING_FILE_PATH_MSG + " Illegal path characters encountered.", e);
+            throw new ArgException(ERROR_SETTING_FILE_PATH_MSG+" Illegal path characters encountered.", e);
         }
     }
 
     private void processUserId() {
         Optional<String> valueEntered = extractUserId();
-        valueEntered.ifPresent(this::validateUserId);
-        setUserId(valueEntered);
+        if (valueEntered.isPresent()) {
+            validateUserId(valueEntered.get());
+            setUserId(valueEntered.get());
+        }
     }
 
     private Optional<String> extractUserId() {
@@ -74,7 +76,7 @@ public final class ArgProcessor {
         ArgValidator.isValidUserId(id);
     }
 
-    private void setUserId(Optional<String> id) {
+    private void setUserId(String id) {
         userId = id;
     }
 }

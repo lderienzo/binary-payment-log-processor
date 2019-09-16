@@ -1,17 +1,16 @@
 package com.adhoc.homework.transactionlogparser.record;
 
+import static com.adhoc.homework.transactionlogparser.utils.FileUtils.readFromBinaryStreamIntoByteArray;
+
 import java.io.DataInputStream;
-import java.io.IOException;
 
 import org.apache.commons.codec.binary.Hex;
 
-import com.adhoc.homework.transactionlogparser.transactionlog.LogParsingException;
 
 public class Record {
-    private static final String FILE_PROCESSING_ERROR_MSG = "Error processing proprietary binary transaction file.";
     private RecordType type;
-    private long timestamp;
     private String userId;
+    private long timestamp;
 
     public Record(){}
 
@@ -31,14 +30,6 @@ public class Record {
         byte[] fourByteArray = new byte[4];
         readFromBinaryStreamIntoByteArray(binaryStream, fourByteArray);
         return fourByteArray;
-    }
-
-    private void readFromBinaryStreamIntoByteArray(DataInputStream readFromStream, byte[] intoArray) {
-        try {
-            readFromStream.read(intoArray, 0, intoArray.length);
-        } catch (IOException e) {
-            throw new LogParsingException(FILE_PROCESSING_ERROR_MSG, e);
-        }
     }
 
     private char[] encodeBytesToHexChars(byte[] byteArrayToEncode) {
